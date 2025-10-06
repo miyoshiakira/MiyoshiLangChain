@@ -1,9 +1,10 @@
+# Firebase Functionsの実行に必要なフレームワーク
 firebase_functions~=0.1.0
-# LangChainコア
-langchain-community
-langchain-core
-langchain
-# OpenAIとの連携
-openai
-# Firebase Functions (Python) でHTTPリクエストを処理するためのライブラリ
 functions-framework
+
+# RAGとLLMの連携に必要なコアライブラリ（PyPIパッケージ名）
+langchain
+langchain-community 
+langchain-core
+langchain-openai
+openai

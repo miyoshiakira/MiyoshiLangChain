@@ -3,7 +3,6 @@ from http import HTTPStatus
 from flask import jsonify
 
 # LangChainの主要コンポーネントをインポート
-from langchain_community.document_loaders import TextLoader
 from langchain_community.vectorstores import DocArrayInMemorySearch
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.text_splitter import CharacterTextSplitter
@@ -11,9 +10,40 @@ from langchain.prompts import ChatPromptTemplate
 from langchain.chains.retrieval import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 
+from firebase_admin import initialize_app
+from firebase_functions.options import set_global_options
+from flask import Flask, jsonify
+from flask_cors import CORS
+from firebase_functions import params, https_fn
+
+app = Flask(__name__)
+
+# すべてのオリジンを許可する場合（開発環境向け）
+CORS(app, origins="*")
+
+# --- Firebase Admin SDKの初期化 ---
+# Cloud Functions環境では、引数なしで初期化すると
+# 自動的にプロジェクトの認証情報が使われます。
+initialize_app()
+
+# 関数のグローバルオプションを設定（例：最大インスタンス数）
+set_global_options(max_instances=10)
+
+# SecretParam オブジェクトは関数の外で定義する
+OPENAI_API_KEY = params.SecretParam('OPENAI_API_KEY')
+
+headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Max-Age': '3600',  # プリフライト結果をキャッシュする秒数
+    'Content-Type': 'application/json'
+}
+
 # Cloud FunctionsのHTTPトリガーを定義
 # ユーザーの質問を受け付け、RAGを実行し、回答を返します
-def rag_api_handler(request):
+@https_fn.on_request()
+def rag_api_handler(request: https_fn.Request) -> https_fn.Response:
     """
     RAGシステムを実装したHTTP Function。
     ユーザーの質問に基づき、内部ナレッジを参照して回答を生成します。
@@ -50,7 +80,7 @@ def rag_api_handler(request):
     docs = text_splitter.split_text(knowledge_text)
 
     # テキストをベクトル化し、メモリ内のベクトルストアに保存（PoC向け）
-    embeddings = OpenAIEmbeddings(api_key=os.environ["OPENAI_API_KEY"])
+    embeddings = OpenAIEmbeddings(api_key=OPENAI_API_KEY)
     vectorstore = DocArrayInMemorySearch.from_texts(docs, embeddings)
 
     # --- RAGの「実行」ステップ ---
@@ -59,7 +89,7 @@ def rag_api_handler(request):
     llm = ChatOpenAI(
         model="gpt-3.5-turbo",
         temperature=0.0,
-        api_key=os.environ["OPENAI_API_KEY"]
+        api_key=OPENAI_API_KEY
     )
 
     # 6. プロンプトテンプレートの定義
@@ -78,13 +108,17 @@ def rag_api_handler(request):
     retrieval_chain = create_retrieval_chain(retriever, document_chain)
 
     # 8. 実行と回答の取得
-    response = retrieval_chain.invoke({"input": user_query})
-
-    # 9. 結果の整形と返却
-    return jsonify({
+    response_txt = retrieval_chain.invoke({"input": user_query})
+    responce = {
         'query': user_query,
-        'answer': response['answer'],
+        'answer': response_txt['answer'],
         # 参照元ドキュメント（今回はコード内のナレッジ）
-        'source_documents_count': len(response['context']),
+        'source_documents_count': len(response_txt['context']),
         'status': 'success'
-    }), HTTPStatus.OK
+    }
+    # 9. 結果の整形と返却
+    return create_response(jsonify(responce))
+
+def create_response(response):
+    response.headers.update(headers)
+    return response
