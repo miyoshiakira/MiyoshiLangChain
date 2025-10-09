@@ -1,0 +1,43 @@
+【venv有効化】
+cd functions
+.\venv\Scripts\activate
+
+【依存関係回復】
+venv有効後に。
+pip install -r requirements.txt
+　※ファイルにライブラリを羅列
+または
+pip install ライブラリ名
+
+
+
+【Git構築】
+git init .
+git remote add origin https://github.com/miyoshiakira/ai-image-creater.git
+git add .
+git commit -m '初回コミット'
+git push origin master
+
+【環境構築】
+npm create vite@latest ai-image-creater -- --template react-ts
+cd ai-image-creater
+npm install
+npm run dev
+
+【Hosting & Storage & Function(Python)】
+npm install -g firebase-tools
+firebase login
+firebase init
+
+【Storage】
+	・ASIA-NORTHEAST1を選択　$0.023(GB/月)かかる
+    ・テストモードで開始でよい。あとからパケットポリシーは設定するものとする。
+
+※Gitの設定のところは「miyoshiakira/ai-image-creater」みたいに入力する
+
+
+【デプロイコマンド】
+cd functions
+.\venv\Scripts\activate
+cd ..
+firebase deploy --only functions

@@ -1,10 +1,12 @@
-# Firebase Functionsの実行に必要なフレームワーク
+# パッケージ名とバージョンのみを記載します
 firebase_functions~=0.1.0
-functions-framework
-
-# RAGとLLMの連携に必要なコアライブラリ（PyPIパッケージ名）
+firebase_admin
+flask
+flask_cors
+# httpをrequestsと仮定して記載 (もしrequestsが必要なら)
+# もし http という別パッケージを意図しているならそのまま
+requests # もし requests が必要なら追加
+# langchain系のパッケージをまとめて記載
 langchain
-langchain-community 
-langchain-core
-langchain-openai
-openai
+langchain_community
+langchain_openai
