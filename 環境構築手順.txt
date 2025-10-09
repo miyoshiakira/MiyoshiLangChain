@@ -41,3 +41,7 @@ cd functions
 .\venv\Scripts\activate
 cd ..
 firebase deploy --only functions
+
+【pythonのAPIキー確認】
+firebase functions:secrets:set OPENAI_API_KEY
+firebase functions:secrets:access OPENAI_API_KEY

@@ -10,3 +10,5 @@ requests # もし requests が必要なら追加
 langchain
 langchain_community
 langchain_openai
+# ★ 必要なライブラリを追加
+docarray  # DocArrayInMemorySearch が必要とするパッケージ

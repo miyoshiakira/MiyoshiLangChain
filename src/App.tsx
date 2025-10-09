@@ -1,12 +1,12 @@
 import './App.css'
-import RAGSender from './component/RAGSender'
+import AIChatApp from './component/AIChatApp'
 
 function App() {
 
   return (
     <>
       <h1>RAG API 送信</h1>
-      <RAGSender />
+      <AIChatApp />
     </>
   )
 }
